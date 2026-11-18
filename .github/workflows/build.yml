@@ -1,0 +1,26 @@
+name: Build Pirate Chest CE
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract game
+        run: unzip PirateChestCE_alpha01_source.zip
+      - name: Install compiler
+        run: |
+          curl -fL https://github.com/CE-Programming/toolchain/releases/download/v15.0/CEdev-Linux.tar.gz -o /tmp/cedev.tar.gz
+          mkdir -p /tmp/cedev
+          tar -xzf /tmp/cedev.tar.gz -C /tmp/cedev
+          config=$(find /tmp/cedev -name cedev-config -type f | head -n1)
+          test -n "$config"
+          dirname "$config" >> "$GITHUB_PATH"
+      - name: Compile
+        run: cd PirateChestCE && make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PirateChestCE
+          path: PirateChestCE/bin/PIRATE.8xp
+          if-no-files-found: error
